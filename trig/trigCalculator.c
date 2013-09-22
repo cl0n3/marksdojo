@@ -8,6 +8,13 @@
 #define BUF_SIZE 50
 #define NUM_BUF_SIZE 10
 
+// the delimiter for the program output 
+char delim = ',';
+// the decimal format for the program output
+char* format = NULL;
+// the optional file name to write program output
+char* file = NULL;
+
 float toRadians(float deg)
 {
 	return deg * PI / 180;
@@ -37,16 +44,16 @@ void dispHelp(void)
 }
 
 //This function accepts values and prints out the sin cos tan table
-void calculateAndPrint(int doSin, int doCos, int doTan, int useRads, int useDegs, float lower, float upper, int rows)
+void calculateAndPrint( int doSin, int doCos, int doTan, int useRads, int useDegs, float lower, float upper, int rows)
 {
 	int totalRows = rows + 2; //we add two because input gives amount of intermediate rows, we want total rows
 	float itSize = (upper - lower) / (rows + 1);
 
 	printf("Degrees,Radians");
 
-	if (doSin) printf(",Sin");
-	if (doCos) printf(",Cos");
-	if (doTan) printf(",Tan");
+	if (doSin) printf("%cSin", delim);
+	if (doCos) printf("%cCos", delim);
+	if (doTan) printf("%cTan", delim);
 
 	printf("\n");
 
@@ -54,15 +61,37 @@ void calculateAndPrint(int doSin, int doCos, int doTan, int useRads, int useDegs
 	int i;
 	for(i = 0; i < totalRows; ++i) 
 	{
-		printf("%.3f,", (useRads ? toDegrees(row) : row));
-		printf("%.3f", (useDegs ? toRadians(row) : row));
-		if (doSin) printf(",%.3f", sin(row));
-		if (doCos) printf(",%.3f", cos(row));
-		if (doTan) printf(",%.3f", tan(row));
+		printf(format, (useRads ? toDegrees(row) : row));
+		putc(delim, stdout);
+		printf(format, (useDegs ? toRadians(row) : row));
+		if (doSin) { putc(delim, stdout); printf(format, sin(row)); }
+		if (doCos) { putc(delim, stdout); printf(format, cos(row)); }
+		if (doTan) { putc(delim, stdout); printf(format, tan(row)); }
 
 		printf("\n");
 		row += itSize;
 	}
+}
+
+int parseDelim()
+{
+	char buf[BUF_SIZE] = {0};
+	printf("\nPlease enter delimiter ['%c']: ", delim);
+	fgets(buf, sizeof(buf), stdin);
+	delim = buf[0];
+}
+
+int parseFormat()
+{
+	char buf[BUF_SIZE] = {0};
+	printf("\nPlease enter output format ['%s']: ", format);
+	fgets(buf, sizeof(buf), stdin);
+	// find the \n 
+	char* nlp = strchr(buf,'\n');
+	int newSize = nlp-buf;
+	free(format);
+	format = (char*) malloc (newSize);
+	strncpy(format, buf, newSize);
 }
 
 int parseInput(int* doSin, int* doCos, int* doTan, int* useRads, int* useDegs, float* operands)
@@ -87,6 +116,11 @@ int parseInput(int* doSin, int* doCos, int* doTan, int* useRads, int* useDegs, f
 
 			case 'H':
 			case 'h': dispHelp(); return 2;
+
+			case 'F':
+			case 'f': parseFormat(); return 2;
+			case 'Z':
+			case 'z': parseDelim(); return 2; 
 
 			case 'S':
 			case 's': *doSin = 1; break;
@@ -126,8 +160,8 @@ int parseInput(int* doSin, int* doCos, int* doTan, int* useRads, int* useDegs, f
 
 	// invlaid chars entered
 	if (illegalInput ||
-		*useDegs && *useRads ||
-		(isnan(operands[0]) && isnan(operands[1]) && isnan(operands[2])) ||
+		(*useDegs && *useRads) ||
+		(isnan(operands[0]) || isnan(operands[1]) || isnan(operands[2])) ||
 		(floor(operands[2]) != operands[2] || operands[2] < 0))
 	{
 		printf("Error: Illegal input!\n");
@@ -142,8 +176,14 @@ int parseInput(int* doSin, int* doCos, int* doTan, int* useRads, int* useDegs, f
 
 inputChecking()
 {	
-	int active = 1;
-	while(active)
+	if (!format)
+	{
+		format = (char*) malloc(5);
+		strcpy(format, "%.3f");
+	}
+
+	int prompt = 1;
+	while(prompt)
 	{
 		// variables for user input
 		int doSin = 0;
@@ -151,20 +191,16 @@ inputChecking()
 		int doTan = 0;
 		int useRads = 0;
 		int useDegs = 0;
-		float operands[3] = {NAN};
-		// init operands to nan 
-		//int i;
-		//for (i=0; i<3; ++i) 
-		//	operands[i] = NAN;
+		float operands[3] = {NAN,NAN,NAN};
 
 		int result = parseInput(&doSin, &doCos, &doTan, &useRads, &useDegs, operands);
 		if (result == 0)
 		{	
-			active = 0;
+			prompt = 0;
 		}
 		else if (result == 1)
 		{
-			// if no operands are set then default to all on. 
+			// set up defaults
 			if (!doSin && !doCos && !doTan)
 			{
 				doSin = 1;
@@ -177,16 +213,17 @@ inputChecking()
 				useDegs = 1;
 			}
 
-			// now you can fill complete the calculation and output using the parsed info. 
-			// casting is fine here since validation has passed
 			calculateAndPrint(doSin, doCos, doTan, useRads, useDegs, operands[0], operands[1], (int)operands[2]);
 		}
 	}
 }
 
-int main(void)
+int
+main (int argc, char **argv)
 {
 	printf("TRIG: the trigonometric calculator\n");
 	inputChecking();
+
+	free(format);
 }
 
