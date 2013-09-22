@@ -14,6 +14,7 @@ char delim = ',';
 char* format = NULL;
 // the optional file name to write program output
 char* file = NULL;
+FILE* outputFile = NULL;
 
 float toRadians(float deg)
 {
@@ -44,32 +45,31 @@ void dispHelp(void)
 }
 
 //This function accepts values and prints out the sin cos tan table
-void calculateAndPrint( int doSin, int doCos, int doTan, int useRads, int useDegs, float lower, float upper, int rows)
+void calculateAndPrint(FILE* stream, int doSin, int doCos, int doTan, int useRads, int useDegs, float lower, float upper, int rows)
 {
 	int totalRows = rows + 2; //we add two because input gives amount of intermediate rows, we want total rows
 	float itSize = (upper - lower) / (rows + 1);
-	printf("%.3f %.3f %i %.3f", upper, lower, (rows + 1), itSize);
 
-	printf("Degrees,Radians");
+	fprintf(stream, "Degrees%cRadians", delim);
 
-	if (doSin) printf("%cSin", delim);
-	if (doCos) printf("%cCos", delim);
-	if (doTan) printf("%cTan", delim);
+	if (doSin) fprintf(stream, "%cSin", delim);
+	if (doCos) fprintf(stream, "%cCos", delim);
+	if (doTan) fprintf(stream, "%cTan", delim);
 
-	printf("\n");
+	fprintf(stream, "\n");
 
 	float row = lower;
 	int i;
 	for(i = 0; i < totalRows; ++i) 
 	{
-		printf(format, (useRads ? toDegrees(row) : row));
-		putc(delim, stdout);
-		printf(format, (useDegs ? toRadians(row) : row));
-		if (doSin) { putc(delim, stdout); printf(format, sin(row)); }
-		if (doCos) { putc(delim, stdout); printf(format, cos(row)); }
-		if (doTan) { putc(delim, stdout); printf(format, tan(row)); }
+		fprintf(stream, format, (useRads ? toDegrees(row) : row));
+		fputc(delim, stream);
+		fprintf(stream, format, (useDegs ? toRadians(row) : row));
+		if (doSin) { fputc(delim, stream); fprintf(stream, format, sin(row)); }
+		if (doCos) { fputc(delim, stream); fprintf(stream, format, cos(row)); }
+		if (doTan) { fputc(delim, stream); fprintf(stream, format, tan(row)); }
 
-		printf("\n");
+		fprintf(stream, "\n");
 		row += itSize;
 	}
 }
@@ -95,6 +95,28 @@ int parseFormat()
 	strncpy(format, buf, newSize);
 }
 
+int parseFile()
+{
+	char buf[BUF_SIZE] = {0};
+	printf("\nPlease enter output file ['%s']: ", file ? file : "");
+	fgets(buf, sizeof(buf), stdin);
+	// find the \n 
+	char* nlp = strchr(buf,'\n');
+	int newSize = nlp-buf;
+	if (file)
+		free(file);
+	file = (char*) malloc (newSize);
+	strncpy(file, buf, newSize);
+
+	// close the old and open the new file
+	if (outputFile)
+	{
+		fclose(outputFile);
+	}
+
+	outputFile = fopen(file, "w");
+}
+
 int parseInput(char* buf, int* doSin, int* doCos, int* doTan, int* useRads, int* useDegs, float* operands)
 {
 	// temporary variables needed for parsing
@@ -117,6 +139,8 @@ int parseInput(char* buf, int* doSin, int* doCos, int* doTan, int* useRads, int*
 			case 'f': parseFormat(); return 2;
 			case 'Z':
 			case 'z': parseDelim(); return 2; 
+			case 'O':
+			case 'o': parseFile(); return 2;
 
 			case 'S':
 			case 's': *doSin = 1; break;
@@ -161,9 +185,9 @@ int parseInput(char* buf, int* doSin, int* doCos, int* doTan, int* useRads, int*
 		(floor(operands[2]) != operands[2] || operands[2] < 0))
 	{
 		printf("Error: Illegal input!\n");
-		printf("illegal(%i)\n", illegalInput);
-		printf("op1(%.3f) op2(%.3f) op3(%.3f)\n", operands[0], operands[1], operands[2]);
-		printf("%i\n", floor(operands[2]) != operands[2] || operands[2] < 0);
+		//printf("illegal(%i)\n", illegalInput);
+		//printf("op1(%.3f) op2(%.3f) op3(%.3f)\n", operands[0], operands[1], operands[2]);
+		//printf("%i\n", floor(operands[2]) != operands[2] || operands[2] < 0);
 		return 2;
 	}
 
@@ -200,7 +224,9 @@ int evaluateBuffer(char* buf)
 			useDegs = 1;
 		}
 
-		calculateAndPrint(doSin, doCos, doTan, useRads, useDegs, operands[0], operands[1], (int)operands[2]);
+		calculateAndPrint(stdout, doSin, doCos, doTan, useRads, useDegs, operands[0], operands[1], (int)operands[2]);
+		if (file)
+			calculateAndPrint(outputFile, doSin, doCos, doTan, useRads, useDegs, operands[0], operands[1], (int)operands[2]);
 	}
 
 	return 1;
@@ -245,8 +271,11 @@ int main(int argc, char **argv)
 	{
 		inputChecking();	
 	}
-	
 
 	free(format);
+	if (file)
+		free(file);
+	if (outputFile)
+		fclose(outputFile);
 }
 
