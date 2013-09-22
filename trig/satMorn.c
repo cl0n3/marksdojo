@@ -1,3 +1,5 @@
+//comment to test commiting to repo
+
 //degrees to radians : multiply by pi divide by 180
 #include <stdlib.h>
 #include <stdio.h>
