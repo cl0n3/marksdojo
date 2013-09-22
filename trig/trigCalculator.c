@@ -232,7 +232,7 @@ int evaluateBuffer(char* buf)
 	return 1;
 }
 
-void inputChecking()
+void interactiveMode()
 {
 	while(1)
 	{
@@ -246,6 +246,21 @@ void inputChecking()
 	}
 }
 
+void headlessMode(int argc, char** argv)
+{
+	// use the arg buffer if args detected
+	char buf[BUF_SIZE] = {0};
+	int arg;
+	// first arg is the name of the program.
+	for (arg = 1; arg < argc; ++arg)
+	{
+		strcat(buf, argv[arg]);
+		strcat(buf, arg == argc - 1 ? "\n" : " ");
+	}
+	printf("'%s'\n", buf);
+	evaluateBuffer(buf);
+}
+
 int main(int argc, char **argv)
 {
 	printf("TRIG: the trigonometric calculator\n");
@@ -254,24 +269,10 @@ int main(int argc, char **argv)
 	strcpy(format, "%.3f");
 	
 	if (argc > 1)
-	{
-		// use the arg buffer if args detected
-		char buf[BUF_SIZE] = {0};
-		int arg;
-		// first arg is the name of the program.
-		for (arg = 1; arg < argc; ++arg)
-		{
-			strcat(buf, argv[arg]);
-			strcat(buf, arg == argc - 1 ? "\n" : " ");
-		}
-		printf("'%s'\n", buf);
-		evaluateBuffer(buf);
-	}
+		headlessMode(argc, argv);
 	else
-	{
-		inputChecking();	
-	}
-
+		interactiveMode();	
+	
 	free(format);
 	if (file)
 		free(file);
