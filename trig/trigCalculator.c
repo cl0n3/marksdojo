@@ -94,13 +94,9 @@ int parseFormat()
 	strncpy(format, buf, newSize);
 }
 
-int parseInput(int* doSin, int* doCos, int* doTan, int* useRads, int* useDegs, float* operands)
+int parseInput(char* buf, int* doSin, int* doCos, int* doTan, int* useRads, int* useDegs, float* operands)
 {
-	// read the user input
-	char buf[BUF_SIZE] = {0};
-	printf("\nPlease input request (h-help, q-quit): ");
-	fgets(buf, sizeof(buf), stdin);
-
+	printf("'%s'\n", buf);
 	// temporary variables needed for parsing
 	int illegalInput = 0;
 	char num[NUM_BUF_SIZE] = {0};
@@ -148,7 +144,7 @@ int parseInput(int* doSin, int* doCos, int* doTan, int* useRads, int* useDegs, f
 			case '.': num[numCnt++] = buf[i]; break;
 			
 			case ' ':
-			case '\n': if(numCnt) { operands[operandCnt++] = strtod(num, NULL); numCnt = 0; memset(num, 0, sizeof(num)); } break;
+			case '\n': if(numCnt) { operands[operandCnt++] = strtod(num, NULL); numCnt = 0; } break;
 			default:
 				illegalInput = 1;
 		}
@@ -174,55 +170,82 @@ int parseInput(int* doSin, int* doCos, int* doTan, int* useRads, int* useDegs, f
 	return 1;
 }
 
-inputChecking()
-{	
-	if (!format)
+int evaluateBuffer(char* buf)
+{
+	// variables for user input
+	int doSin = 0;
+	int doCos = 0;
+	int doTan = 0;
+	int useRads = 0;
+	int useDegs = 0;
+	float operands[3] = {NAN,NAN,NAN};
+
+	int result = parseInput(buf, &doSin, &doCos, &doTan, &useRads, &useDegs, operands);
+	if (result == 0)
+	{	
+		return 0;
+	}
+	else if (result == 1)
 	{
-		format = (char*) malloc(5);
-		strcpy(format, "%.3f");
+		// set up defaults
+		if (!doSin && !doCos && !doTan)
+		{
+			doSin = 1;
+			doCos = 1;
+			doTan = 1;
+		}
+
+		if (!useDegs && !useRads)
+		{
+			useDegs = 1;
+		}
+
+		calculateAndPrint(doSin, doCos, doTan, useRads, useDegs, operands[0], operands[1], (int)operands[2]);
 	}
 
-	int prompt = 1;
-	while(prompt)
+	return 1;
+}
+
+void inputChecking()
+{
+	while(1)
 	{
-		// variables for user input
-		int doSin = 0;
-		int doCos = 0;
-		int doTan = 0;
-		int useRads = 0;
-		int useDegs = 0;
-		float operands[3] = {NAN,NAN,NAN};
+		// read the user input
+		char buf[BUF_SIZE] = {0};
+		printf("\nPlease input request (h-help, q-quit): ");
+		fgets(buf, sizeof(buf), stdin);
 
-		int result = parseInput(&doSin, &doCos, &doTan, &useRads, &useDegs, operands);
-		if (result == 0)
-		{	
-			prompt = 0;
-		}
-		else if (result == 1)
-		{
-			// set up defaults
-			if (!doSin && !doCos && !doTan)
-			{
-				doSin = 1;
-				doCos = 1;
-				doTan = 1;
-			}
-
-			if (!useDegs && !useRads)
-			{
-				useDegs = 1;
-			}
-
-			calculateAndPrint(doSin, doCos, doTan, useRads, useDegs, operands[0], operands[1], (int)operands[2]);
-		}
+		if (!evaluateBuffer(buf))
+			break;		
 	}
 }
 
-int
-main (int argc, char **argv)
+int main(int argc, char **argv)
 {
 	printf("TRIG: the trigonometric calculator\n");
-	inputChecking();
+
+	format = (char*) malloc(5);
+	strcpy(format, "%.3f");
+	
+	if (argc > 1)
+	{
+		// use the arg buffer if args detected
+		char buf[BUF_SIZE] = {0};
+		int arg;
+		// first arg is the name of the program.
+		for (arg = 1; arg < argc; ++arg)
+		{
+			strcat(buf, argv[arg]);
+			strcat(buf, arg == argc - 1 ? "\n" : " ");
+		}
+		printf("'%s'\n", buf);
+		evaluateBuffer(buf);
+	}
+	else
+	{
+		inputChecking();	
+	}
+	
 
 	free(format);
 }
