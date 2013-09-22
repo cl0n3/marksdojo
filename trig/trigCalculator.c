@@ -69,7 +69,7 @@ int parseInput(int* doSin, int* doCos, int* doTan, int* useRads, int* useDegs, f
 {
 	// read the user input
 	char buf[BUF_SIZE] = {0};
-	printf("Please input request (h-help, q-quit): ");
+	printf("\nPlease input request (h-help, q-quit): ");
 	fgets(buf, sizeof(buf), stdin);
 
 	// temporary variables needed for parsing
@@ -131,9 +131,9 @@ int parseInput(int* doSin, int* doCos, int* doTan, int* useRads, int* useDegs, f
 		(floor(operands[2]) != operands[2] || operands[2] < 0))
 	{
 		printf("Error: Illegal input!\n");
-		printf("illegal(%i)\n", illegalInput);
-		printf("op1(%.3f) op2(%.3f) op3(%.3f)\n", operands[0], operands[1], operands[2]);
-		printf("%i\n", floor(operands[2]) != operands[2] || operands[2] < 0);
+		//printf("illegal(%i)\n", illegalInput);
+		//printf("op1(%.3f) op2(%.3f) op3(%.3f)\n", operands[0], operands[1], operands[2]);
+		//printf("%i\n", floor(operands[2]) != operands[2] || operands[2] < 0);
 		return 2;
 	}
 
