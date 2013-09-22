@@ -117,42 +117,42 @@ int parseFile()
 	outputFile = fopen(file, "w");
 }
 
-int parseInput(char* buf, int* doSin, int* doCos, int* doTan, int* useRads, int* useDegs, float* operands)
+int evaluateBuffer(char* buf)
 {
-	// temporary variables needed for parsing
+	// variables for user input
+	int doSin = 0;
+	int doCos = 0;
+	int doTan = 0;
+	int useRads = 0;
+	int useDegs = 0;
+	float operands[3] = {NAN,NAN,NAN};
+
+	// temps
 	int illegalInput = 0;
 	char num[NUM_BUF_SIZE] = {0};
 	int numCnt = 0;
 	int operandCnt = 0;
 	int i;
+	for (i = 0; i < BUF_SIZE; ++i)
+		buf[i] = tolower(buf[i]);
+
 	for(i = 0; i < BUF_SIZE; ++i)
 	{
 		switch(buf[i])
 		{
-			case 'Q':
 			case 'q': return 0;
+			case 'h': dispHelp(); return 1;
 
-			case 'H':
-			case 'h': dispHelp(); return 2;
+			case 'f': parseFormat(); return 1;
+			case 'z': parseDelim(); return 1; 
+			case 'o': parseFile(); return 1;
 
-			case 'F':
-			case 'f': parseFormat(); return 2;
-			case 'Z':
-			case 'z': parseDelim(); return 2; 
-			case 'O':
-			case 'o': parseFile(); return 2;
+			case 's': doSin = 1; break;
+			case 't': doTan = 1; break;
+			case 'c': doCos = 1; break;
 
-			case 'S':
-			case 's': *doSin = 1; break;
-			case 'T':
-			case 't': *doTan = 1; break;
-			case 'C':
-			case 'c': *doCos = 1; break;
-
-			case 'R':
-			case 'r': *useRads = 1; break;
-			case 'D':
-			case 'd': *useDegs = 1; break;
+			case 'r': useRads = 1; break;
+			case 'd': useDegs = 1; break;
 
 			case '0':
 			case '1':
@@ -180,38 +180,14 @@ int parseInput(char* buf, int* doSin, int* doCos, int* doTan, int* useRads, int*
 
 	// invlaid chars entered
 	if (illegalInput ||
-		(*useDegs && *useRads) ||
+		(useDegs && useRads) ||
 		(isnan(operands[0]) || isnan(operands[1]) || isnan(operands[2])) ||
 		(floor(operands[2]) != operands[2] || operands[2] < 0))
 	{
 		printf("Error: Illegal input!\n");
-		//printf("illegal(%i)\n", illegalInput);
-		//printf("op1(%.3f) op2(%.3f) op3(%.3f)\n", operands[0], operands[1], operands[2]);
-		//printf("%i\n", floor(operands[2]) != operands[2] || operands[2] < 0);
-		return 2;
-	}
-
-	return 1;
-}
-
-int evaluateBuffer(char* buf)
-{
-	// variables for user input
-	int doSin = 0;
-	int doCos = 0;
-	int doTan = 0;
-	int useRads = 0;
-	int useDegs = 0;
-	float operands[3] = {NAN,NAN,NAN};
-
-	int result = parseInput(buf, &doSin, &doCos, &doTan, &useRads, &useDegs, operands);
-	if (result == 0)
-	{	
-		return 0;
-	}
-	else if (result == 1)
+	} 
+	else
 	{
-		// set up defaults
 		if (!doSin && !doCos && !doTan)
 		{
 			doSin = 1;
@@ -261,7 +237,7 @@ void headlessMode(int argc, char** argv)
 	evaluateBuffer(buf);
 }
 
-int main(int argc, char **argv)
+void calculator(int argc, char** argv)
 {
 	printf("TRIG: the trigonometric calculator\n");
 
@@ -278,5 +254,10 @@ int main(int argc, char **argv)
 		free(file);
 	if (outputFile)
 		fclose(outputFile);
+}
+
+int main(int argc, char **argv)
+{
+	calculator(argc, argv);
 }
 
