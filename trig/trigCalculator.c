@@ -110,6 +110,7 @@ int parseInput(int* doSin, int* doCos, int* doTan, int* useRads, int* useDegs, f
 			case '7':
 			case '8':
 			case '9':
+			case '-':
 			case '.': num[numCnt++] = buf[i]; break;
 			
 			case ' ':
@@ -126,10 +127,13 @@ int parseInput(int* doSin, int* doCos, int* doTan, int* useRads, int* useDegs, f
 	// invlaid chars entered
 	if (illegalInput ||
 		*useDegs && *useRads ||
-		!(operands[0] && operands[1] && operands[2]) ||
+		(isnan(operands[0]) && isnan(operands[1]) && isnan(operands[2])) ||
 		(floor(operands[2]) != operands[2] || operands[2] < 0))
 	{
 		printf("Error: Illegal input!\n");
+		printf("illegal(%i)\n", illegalInput);
+		printf("op1(%.3f) op2(%.3f) op3(%.3f)\n", operands[0], operands[1], operands[2]);
+		printf("%i\n", floor(operands[2]) != operands[2] || operands[2] < 0);
 		return 2;
 	}
 
@@ -147,7 +151,11 @@ inputChecking()
 		int doTan = 0;
 		int useRads = 0;
 		int useDegs = 0;
-		float operands[3] = {0}; 
+		float operands[3] = {NAN};
+		// init operands to nan 
+		//int i;
+		//for (i=0; i<3; ++i) 
+		//	operands[i] = NAN;
 
 		int result = parseInput(&doSin, &doCos, &doTan, &useRads, &useDegs, operands);
 		if (result == 0)
