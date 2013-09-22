@@ -48,6 +48,7 @@ void calculateAndPrint( int doSin, int doCos, int doTan, int useRads, int useDeg
 {
 	int totalRows = rows + 2; //we add two because input gives amount of intermediate rows, we want total rows
 	float itSize = (upper - lower) / (rows + 1);
+	printf("%.3f %.3f %i %.3f", upper, lower, (rows + 1), itSize);
 
 	printf("Degrees,Radians");
 
@@ -96,7 +97,6 @@ int parseFormat()
 
 int parseInput(char* buf, int* doSin, int* doCos, int* doTan, int* useRads, int* useDegs, float* operands)
 {
-	printf("'%s'\n", buf);
 	// temporary variables needed for parsing
 	int illegalInput = 0;
 	char num[NUM_BUF_SIZE] = {0};
@@ -144,7 +144,7 @@ int parseInput(char* buf, int* doSin, int* doCos, int* doTan, int* useRads, int*
 			case '.': num[numCnt++] = buf[i]; break;
 			
 			case ' ':
-			case '\n': if(numCnt) { operands[operandCnt++] = strtod(num, NULL); numCnt = 0; } break;
+			case '\n': if(numCnt) { operands[operandCnt++] = strtod(num, NULL); numCnt = 0; memset(num, 0, NUM_BUF_SIZE); } break;
 			default:
 				illegalInput = 1;
 		}
@@ -161,9 +161,9 @@ int parseInput(char* buf, int* doSin, int* doCos, int* doTan, int* useRads, int*
 		(floor(operands[2]) != operands[2] || operands[2] < 0))
 	{
 		printf("Error: Illegal input!\n");
-		//printf("illegal(%i)\n", illegalInput);
-		//printf("op1(%.3f) op2(%.3f) op3(%.3f)\n", operands[0], operands[1], operands[2]);
-		//printf("%i\n", floor(operands[2]) != operands[2] || operands[2] < 0);
+		printf("illegal(%i)\n", illegalInput);
+		printf("op1(%.3f) op2(%.3f) op3(%.3f)\n", operands[0], operands[1], operands[2]);
+		printf("%i\n", floor(operands[2]) != operands[2] || operands[2] < 0);
 		return 2;
 	}
 
