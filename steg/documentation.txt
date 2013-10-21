@@ -1,0 +1,42 @@
+
+Documentation
+
+The steganography progaram takes a text message and encodes it into an uncompressed 24-bit Windows Bitmap file. It
+also functions to decode the message.
+
+
+The encoding portion of the program is initiated by typing steg into the commandline and is followed by three 
+filenames. The first is the Windows Bitmap file for the message to be stored in. The second file contains the
+message. The third filename specifies a name for the corrupted file to be exported to:
+
+	steg <bmpfile> <datafile> <outputfile>
+
+Conversely, for decoding the message from the corrupted Bitmap file, the steg command takes two commands.
+The Bitmap file to be decoded, and the name of the output file:
+
+	steg <bmpfile> <outputfile>
+
+
+Encoding:
+
+The readAndCopy() function accepts the Bitmap file and returns the BitmapOffset field from the file header.
+Its secondary function is to copy the header to the start of our file.
+	
+	int readAndCopy(FILE *fp) 
+	
+The offset size is then passed to the byteAlloc() function along with a pointer to the data file. It skips over
+the header and leaves 32 bytes of pixel data to store the size of the input data. The amount of bytes left over
+in pixel data from that position to the end of the file can then be measured, and we can determine how many bits
+of each byte we will need to store the text message. It then returns the value corruptionValue specifying the
+severity of corruption of the original file. The size of the data is stored in the stack.
+
+	int byteAlloc(int, FILE *fp)
+
+The bitChange() function can now iterate through each byte of the Bitmap and alter the least significant bits
+according to our text message. To do this it needs the corruptionValue, both the Bitmap file and data file, and a
+pointer to the size of data (to be stored in the first 32 bytes of pixel data).
+The resulting data is copied to our output file following the header and exported.
+
+	bitChange(int, FILE *fp, FILE *fp, *int)
+	
+Decoding:
