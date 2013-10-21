@@ -6,6 +6,7 @@
 #include <math.h>
 #include <ctype.h>
 #include <string.h>
+#define BUF_SIZE 50
 #define PI 3.14159265
 
 
@@ -16,26 +17,21 @@ int main(void)
 }
 
 
-//THIS IS A FUNCTION TO CHECK THE VALUES ENTERED BY THE USER
+// The inputChecking function will check the values inputted by the user //
 
 inputChecking()
 {
-//int n = 0;
-//while ( n != 1){
-	char buf[500] = {0}, trigInputValues[5] = {0}, lowerTrigValues[5] = {0}, trigFuncs[] = {'s','t','c','d','r','h','q',' '}, low[5]={0}, up[5]={0}, *lowPtr, *upPtr;///insert information here
-	double lowerUpper[2] = {0};
-	int degrees = 0, radians = 0, i, rows = 0;
+int active = 1;
+while ( active )
+{
+	// Variables for user input
+	int doSin = 0, doCos = 0, doTan = 0, useRads = 0, useDeg = 0, numCnt = 0, operandCnt = 0, i;
+	
+	// Use the parseInput function to get all the user inputs for checking (and do some checking itself).
+	int parseInput(&doSin, &doCos, &doTan, &useRads, &useDegs, operands)
 
-	printf("Please input request (h-help, q-quit): ");
-
-	fgets(buf, sizeof(buf), stdin);
-	sscanf(buf, "%c%c%c%c%c %s %s %i", &trigInputValues[0], &trigInputValues[1], &trigInputValues[2], &trigInputValues[3], &trigInputValues[4], &low[0], &up[0], &rows);
-
-	// Incase of UPPERCASE input, convert the input to lowercase.
-	for(i=0; i<sizeof(trigInputValues); i++){
-		lowerTrigValues[i] = tolower(trigInputValues[i]);
-	}
-
+	
+	
 	if ( lowerTrigValues[0] == 'h' ){ //display help message
 		dispHelp();
 	}
@@ -109,7 +105,55 @@ inputChecking()
 */
 
 }
+// This is a parsing function that will scan through the input buffer one char at a time
 
+int parseInput(int*, int*, int*, int*, int*, float)
+
+char buf[BUF_SIZE] = {0};
+
+fgets(buf, sizeof(buf), stdin);
+
+	
+	for(i = 0; i < BUF_SIZE; ++i)
+		{
+			switch(buf[i])
+			{
+				case 'Q':
+				case 'q': return 0;
+
+				case 'H':
+				case 'h': dispHelp(); return 2;
+
+				case 'S':
+				case 's': *doSin = 1; break;
+				case 'T':
+				case 't': *doTan = 1; break;
+				case 'C':
+				case 'c': *doCos = 1; break;
+
+				case 'R':
+				case 'r': *useRads = 1; break;
+				case 'D':
+				case 'd': *useDegs = 1; break;
+
+				case '0':
+				case '1':
+				case '2':
+				case '3':
+				case '4':
+				case '5':
+				case '6':
+				case '7':
+				case '8':
+				case '9':
+				case '.': num[numCnt++] = buf[i]; break;
+
+				case ' ':
+				case '\n': if(numCnt) { operands[operandCnt++] = strtod(num, NULL); numCnt = 0; memset(num, 0, sizeof(num)); } break;
+				default:
+					illegalInput = 1;
+	
+	
 
 //This function accepts values and prints out the sin cos tan table
 void calculateAndPrint(float lowerUpper[], float lowerTrigValues[], int rows)
