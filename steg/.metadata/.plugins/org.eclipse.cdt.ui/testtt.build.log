@@ -1,0 +1,14 @@
+23:01:53 **** Incremental Build of configuration Debug for project testtt ****
+make all 
+Building file: ../src/testtt.c
+Invoking: GCC C Compiler
+gcc -O0 -g3 -Wall -c -fmessage-length=0 -MMD -MP -MF"src/testtt.d" -MT"src/testtt.d" -o "src/testtt.o" "../src/testtt.c"
+../src/testtt.c: In function 'main':
+../src/testtt.c:20: error: 'fbmp' undeclared (first use in this function)
+../src/testtt.c:20: error: (Each undeclared identifier is reported only once
+../src/testtt.c:20: error: for each function it appears in.)
+../src/testtt.c:10: warning: unused variable 'fin'
+make: *** [src/testtt.o] Error 1
+
+23:01:53 Build Finished (took 164ms)
+

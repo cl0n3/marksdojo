@@ -1,0 +1,139 @@
+20:48:48 **** Build of configuration Debug for project testt ****
+make all 
+Building file: ../src/testt.c
+Invoking: GCC C Compiler
+gcc -O0 -g3 -Wall -c -fmessage-length=0 -MMD -MP -MF"src/testt.d" -MT"src/testt.d" -o "src/testt.o" "../src/testt.c"
+Finished building: ../src/testt.c
+ 
+Building target: testt
+Invoking: MacOS X C Linker
+gcc  -o "testt"  ./src/testt.o   
+Finished building target: testt
+ 
+20:48:53 **** Incremental Build of configuration Debug for project testt ****
+make all 
+make: Nothing to be done for `all'.
+20:48:54 **** Incremental Build of configuration Debug for project testt ****
+make all 
+make: Nothing to be done for `all'.
+20:31:45 **** Build of configuration Debug for project ass ****
+make all 
+Building file: ../src/ass.c
+Invoking: GCC C Compiler
+gcc -O0 -g3 -Wall -c -fmessage-length=0 -MMD -MP -MF"src/ass.d" -MT"src/ass.d" -o "src/ass.o" "../src/ass.c"
+Finished building: ../src/ass.c
+ 
+Building target: ass
+Invoking: MacOS X C Linker
+gcc  -o "ass"  ./src/ass.o   
+Finished building target: ass
+ 
+22:54:04 **** Build of configuration Debug for project steg ****
+make all 
+Building file: ../steg.c
+Invoking: GCC C Compiler
+gcc -O0 -g3 -Wall -c -fmessage-length=0 -MMD -MP -MF"steg.d" -MT"steg.d" -o "steg.o" "../steg.c"
+Finished building: ../steg.c
+ 
+Building target: steg
+Invoking: MacOS X C Linker
+gcc  -o "steg"  ./steg.o   
+Undefined symbols for architecture x86_64:
+  "_main", referenced from:
+      start in crt1.10.6.o
+ld: symbol(s) not found for architecture x86_64
+collect2: ld returned 1 exit status
+make: *** [steg] Error 1
+22:54:34 **** Incremental Build of configuration Debug for project steg ****
+make all 
+Building target: steg
+Invoking: MacOS X C Linker
+gcc  -o "steg"  ./steg.o   
+Undefined symbols for architecture x86_64:
+  "_main", referenced from:
+      start in crt1.10.6.o
+ld: symbol(s) not found for architecture x86_64
+collect2: ld returned 1 exit status
+make: *** [steg] Error 1
+22:54:35 **** Build of configuration Debug for project testtt ****
+make all 
+Building file: ../src/testtt.c
+Invoking: GCC C Compiler
+gcc -O0 -g3 -Wall -c -fmessage-length=0 -MMD -MP -MF"src/testtt.d" -MT"src/testtt.d" -o "src/testtt.o" "../src/testtt.c"
+Finished building: ../src/testtt.c
+ 
+Building target: testtt
+Invoking: MacOS X C Linker
+gcc  -o "testtt"  ./src/testtt.o   
+Finished building target: testtt
+ 
+22:54:42 **** Incremental Build of configuration Debug for project testtt ****
+make all 
+make: Nothing to be done for `all'.
+22:58:54 **** Incremental Build of configuration Debug for project testtt ****
+make all 
+Building file: ../src/testtt.c
+Invoking: GCC C Compiler
+gcc -O0 -g3 -Wall -c -fmessage-length=0 -MMD -MP -MF"src/testtt.d" -MT"src/testtt.d" -o "src/testtt.o" "../src/testtt.c"
+../src/testtt.c:4:20: error: bitmap.h: No such file or directory
+../src/testtt.c: In function 'main':
+../src/testtt.c:10: error: 'BmpData' undeclared (first use in this function)
+../src/testtt.c:10: error: (Each undeclared identifier is reported only once
+../src/testtt.c:10: error: for each function it appears in.)
+../src/testtt.c:10: error: expected ';' before 'bdat'
+../src/testtt.c:17: error: 'bdat' undeclared (first use in this function)
+../src/testtt.c:17: warning: implicit declaration of function 'check_bitmap'
+make: *** [src/testtt.o] Error 1
+23:00:06 **** Incremental Build of configuration Debug for project steg ****
+make all 
+Building file: ../steg.c
+Invoking: GCC C Compiler
+gcc -O0 -g3 -Wall -c -fmessage-length=0 -MMD -MP -MF"steg.d" -MT"steg.d" -o "steg.o" "../steg.c"
+../steg.c: In function 'main':
+../steg.c:14: warning: control reaches end of non-void function
+Finished building: ../steg.c
+ 
+Building target: steg
+Invoking: MacOS X C Linker
+gcc  -o "steg"  ./steg.o   
+Finished building target: steg
+ 
+23:00:07 **** Incremental Build of configuration Debug for project testtt ****
+make all 
+Building file: ../src/testtt.c
+Invoking: GCC C Compiler
+gcc -O0 -g3 -Wall -c -fmessage-length=0 -MMD -MP -MF"src/testtt.d" -MT"src/testtt.d" -o "src/testtt.o" "../src/testtt.c"
+Finished building: ../src/testtt.c
+ 
+Building target: testtt
+Invoking: MacOS X C Linker
+gcc  -o "testtt"  ./src/testtt.o   
+Undefined symbols for architecture x86_64:
+  "_check_bitmap", referenced from:
+      _main in testtt.o
+ld: symbol(s) not found for architecture x86_64
+collect2: ld returned 1 exit status
+make: *** [testtt] Error 1
+23:00:12 **** Incremental Build of configuration Debug for project testtt ****
+make all 
+Building file: ../src/bitmap.c
+Invoking: GCC C Compiler
+gcc -O0 -g3 -Wall -c -fmessage-length=0 -MMD -MP -MF"src/bitmap.d" -MT"src/bitmap.d" -o "src/bitmap.o" "../src/bitmap.c"
+Finished building: ../src/bitmap.c
+ 
+Building target: testtt
+Invoking: MacOS X C Linker
+gcc  -o "testtt"  ./src/bitmap.o ./src/testtt.o   
+Finished building target: testtt
+ 
+23:01:53 **** Incremental Build of configuration Debug for project testtt ****
+make all 
+Building file: ../src/testtt.c
+Invoking: GCC C Compiler
+gcc -O0 -g3 -Wall -c -fmessage-length=0 -MMD -MP -MF"src/testtt.d" -MT"src/testtt.d" -o "src/testtt.o" "../src/testtt.c"
+../src/testtt.c: In function 'main':
+../src/testtt.c:20: error: 'fbmp' undeclared (first use in this function)
+../src/testtt.c:20: error: (Each undeclared identifier is reported only once
+../src/testtt.c:20: error: for each function it appears in.)
+../src/testtt.c:10: warning: unused variable 'fin'
+make: *** [src/testtt.o] Error 1

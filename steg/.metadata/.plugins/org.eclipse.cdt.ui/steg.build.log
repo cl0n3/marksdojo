@@ -1,0 +1,17 @@
+23:00:06 **** Incremental Build of configuration Debug for project steg ****
+make all 
+Building file: ../steg.c
+Invoking: GCC C Compiler
+gcc -O0 -g3 -Wall -c -fmessage-length=0 -MMD -MP -MF"steg.d" -MT"steg.d" -o "steg.o" "../steg.c"
+../steg.c: In function 'main':
+../steg.c:14: warning: control reaches end of non-void function
+Finished building: ../steg.c
+ 
+Building target: steg
+Invoking: MacOS X C Linker
+gcc  -o "steg"  ./steg.o   
+Finished building target: steg
+ 
+
+23:00:07 Build Finished (took 833ms)
+
