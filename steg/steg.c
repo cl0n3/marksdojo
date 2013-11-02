@@ -8,7 +8,11 @@
 #define BitSet(arg,posn) ((arg) | (1L << (posn))) 
 #define BitClr(arg,posn) ((arg) & ~(1L << (posn))) 
 #define BitFlp(arg,posn) ((arg) ^ (1L << (posn))) 
-#define BitTst(arg,posn) ((arg) & (1L << (posn)))
+#define BitTst(arg,posn) (((arg) & (1L << (posn))) != 0)
+
+#define BITS_IN_BYTE 8
+#define BITS_IN_INT 32
+#define DEBUG 1
 
 /* function to return the amount of bytes in a file */
 
@@ -34,7 +38,8 @@ void encode(char *argv[])
 	FILE *fdat = fopen(argv[2], "rb"); // data file to be inserted
     FILE *fout = fopen(argv[3], "wb"); // output file
     BmpData bdat;
-	long corruptionFactor, dataSize, tempDataSize; 
+	long corruptionFactorMax, dataSize, sourceSize, encodingOffset; 
+	int bit, currentSourceByte, currentDataByte, encodingBit;
 	
     if (fbmp == NULL || fout == NULL || fdat == NULL) {
         printf("Error: Could not open files.\n");
@@ -42,120 +47,71 @@ void encode(char *argv[])
     }
 
     bdat = check_bitmap(fbmp); // get information about our bitmap
-
 	dataSize = amountOfBytes(argv[2]); // get the amount of bytes of our data file
-	
-	//temporary stuff to help with debugging:
-	
-	printf("bytes to store in = %i\n", bdat.numpixelbytes);
-	printf("dataByteSize = %li\n", dataSize);
-	printf("dataBitSize = %li\n", dataSize*8);
-	corruptionFactor = (dataSize * 8)/(bdat.numpixelbytes-32);
-	printf("corruption factor = %li\n", corruptionFactor);
-	printf("headersize = %u\n", bdat.headersize);
-	printf("beginning of pixel data = %u\n", (bdat.headersize + 32));
-	
+	sourceSize = bdat.numpixelbytes - BITS_IN_INT;
+	encodingOffset = bdat.headersize + BITS_IN_INT;
+	encodingBit = 0;
 
+	if (DEBUG)
+		printf("sourceSize(%li) dataSize(%li) dataBitSize(%li)\n", 
+			sourceSize, dataSize, dataSize * BITS_IN_BYTE);
 
+	corruptionFactorMax = ceil((dataSize * BITS_IN_BYTE)/(bdat.numpixelbytes - BITS_IN_INT)) + 1;
+
+	printf("There was a maximum of %li bits corrupted per byte\n", corruptionFactorMax);
 
 	while (bdat.headersize--) { /* Copy header verbatim */
 		int c = fgetc(fbmp);
 		fputc(c, fout);
 	}
-	
-	//debugging
-	printf("position of pointer of fbmp is at:%li\n", ftell(fbmp));
-	printf("position of pointer of fout is at:%li\n", ftell(fout));
-	
+	if (DEBUG)
+		printf("header fbmp(%li) fout(%li)\n", ftell(fbmp), ftell(fout));
 
-
-	//insert the number of bytes of the data size into the first 32 bytes of pixel data as a Big Endian binary number 
-	
-	tempDataSize = dataSize;
-	while (tempDataSize != 0) 
+	// encode the size of the input data in the LSBs of the first 32 bytes of pixel data
+	for (bit = 0; bit < sizeof(int) * BITS_IN_BYTE; ++bit)
 	{ 
-		int c = fgetc(fbmp);
-		if (fmod(tempDataSize, 2)) // if result > 0 we need a 1
+		currentSourceByte = fgetc(fbmp);
 
-			if (BitTst(c,0) == 1)
-				fputc(c, fout);
-			else
-				fputc(BitSet(c,0), fout);
+		// flip bit if different
+		if (BitTst(currentSourceByte, 0) != BitTst(dataSize, bit))
+			currentSourceByte = BitFlp(currentSourceByte, 0);
 
-		else // result is an even number, we need a 0
-
-			if (BitTst(c,0) == 0)
-				fputc(c, fout);
-			else
-				fputc(BitClr(c,0), fout);
-
-			tempDataSize = floor(tempDataSize/2);						
+		fputc(currentSourceByte, fout);
 	}
+	if (DEBUG)	   
+		printf("input size fbmp(%li) fout(%li)\n", ftell(fbmp), ftell(fout));
 	
-	//debugging
-	printf("position of pointer of fbmp is at:%li\n", ftell(fbmp));
-	printf("position of pointer of fout is at:%li\n", ftell(fout));
-	
-	fseek( fbmp, 86, SEEK_SET );
-	fseek( fout, 86, SEEK_SET );
-
-	//debugging
-	printf("position of pointer of fbmp is at:%li\n", ftell(fbmp));
-	printf("position of pointer of fout is at:%li\n", ftell(fout));
-
-		
-	// get a character of our data to be encoded. Iterate through each bit of each byte and place it in outgoing file.
-	int i, j, index = 0;
-	for ( i = 0; i < dataSize; i++ )
+	// encode the clear text
+	while ((currentDataByte = fgetc(fdat)) != EOF)
 	{
-					int c = fgetc(fbmp);
-					
-		for ( j = 0; j < 7; j++ ) // a loop to iterate through each bit of byte d (input data)
+		for (bit = 0; bit < BITS_IN_BYTE; ++bit) 
 		{
-			//debugging
-			printf("position of pointer of fbmp is at:%li\n", ftell(fbmp));
-			printf("position of pointer of fout is at:%li\n", ftell(fout));		
-			
-			int d = fgetc(fdat);
+			currentSourceByte = fgetc(fbmp);
 
-			
-			if (BitTst(c,index) == BitTst(d,j)){
-				fputc(c, fout);
+			// loop around and big using next order bits for encoding if the end of the file is reached.
+			if (currentSourceByte == EOF) {
+				fseek(fbmp, encodingOffset, SEEK_SET);
+				fseek(fout, encodingOffset, SEEK_SET);
+				++encodingBit;
+				if (DEBUG)
+					printf("starting from beginning of file using encodingBit(%i)\n", encodingBit);
 			}
 
-			if ((BitTst(c,index) == 1) && (BitTst(d,j) == 0)){
-				fputc(BitClr(c,0), fout);
-			}
+			if (BitTst(currentSourceByte, encodingBit) != BitTst(currentDataByte, bit))
+				currentSourceByte = BitFlp(currentSourceByte, encodingBit);
 			
-			if ((BitTst(c,index) == 0) && (BitTst(d,j) == 1)){
-				fputc(BitSet(c,0), fout);
-			}
-				
-			if (c == EOF){
-				index += 1;
-				fseek( fbmp, (86), SEEK_SET );
-				fseek( fdat, (86), SEEK_SET );
-			}
+			fputc(currentSourceByte, fout);
 		}
 	}
-
-
-	//debugging
-	printf("position of pointer of fbmp is at:%li\n", ftell(fbmp));
-	printf("position of pointer of fout is at:%li\n", ftell(fout));
+	if (DEBUG)	   
+		printf("input data fbmp(%li) fout(%li)\n", ftell(fbmp), ftell(fout));
 	
-	//after inserting our data, copy the leftover bytes into the output.
-
-    while (bdat.numpixelbytes--) { //copy the rest of the pixels
-        int c = fgetc(fbmp);
-        assert(c != EOF);
-        fputc(c, fout); 
-	}
-		   
-	printf("position of pointer of fbmp is at:%li\n", ftell(fbmp));
-	printf("position of pointer of fout is at:%li\n", ftell(fout));
-    
+	//copy the remaining bytes into the output if encoding bit is still 0.
+	while (encodingBit == 0 && (currentSourceByte = fgetc(fbmp)) != EOF)
+		fputc(currentSourceByte, fout);
 	
+	if (DEBUG)	   
+		printf("total fbmp(%li) fout(%li)\n", ftell(fbmp), ftell(fout));
 }
 /* The checkForExistingFile function checks to see if the output file already exists, and asks if we want to overwrite*/
 
