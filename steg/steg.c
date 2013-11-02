@@ -28,29 +28,79 @@ long amountOfBytes(char *str)
 	}
 }
 
+void decode(char *argv[])
+{
+	FILE *fbmp = fopen(argv[1], "rb"); // bmp source file to be corrupted
+    FILE *fout = fopen(argv[2], "wb"); // output file
+
+	BmpData bdat;
+    int bit, currentSourceByte, dataSize, dataOffset;
+
+    bdat = check_bitmap(fbmp); 
+    dataSize = 0;
+    dataOffset = bdat.headersize + sizeof(int) * BITS_IN_BYTE;
+    
+    // skip the header
+    fseek(fbmp, bdat.headersize, SEEK_SET);
+
+    // get the datasize
+	for (bit = 0; bit < sizeof(int) * BITS_IN_BYTE; ++bit)
+	{ 
+		if (BitTst(fgetc(fbmp), 0))
+			dataSize = BitSet(dataSize, bit);	
+	}
+
+	if (DEBUG)
+		printf("decoding %i bytes\n", dataSize);
+
+	// get the cipher text
+	char buf = 0;
+	int encodingBit = 0;
+	for (bit = 0; bit < dataSize * BITS_IN_BYTE; ++bit)
+	{
+		int bufBit = bit % BITS_IN_BYTE;
+		if (bit && !bufBit)
+			fputc(buf, fout);
+
+		int c = fgetc(fbmp);
+		if (c == EOF)
+		{
+			++encodingBit;
+			fseek(fbmp, dataOffset, SEEK_SET);
+			continue;
+		}
+
+		buf = BitTst(c, encodingBit) ?
+			BitSet(buf, bufBit) : BitClr(buf, bufBit);
+	}
+}
 
 /* The encode function takes our input data, merges it with the .bmp and outputs as another .bmp  */
-
 void encode(char *argv[])
 {
 	
 	FILE *fbmp = fopen(argv[1], "rb"); // bmp source file to be corrupted
 	FILE *fdat = fopen(argv[2], "rb"); // data file to be inserted
     FILE *fout = fopen(argv[3], "wb"); // output file
+
+    if (!access(argv[1], R_OK))
+		printf("Error: Could not open file %s\n", argv[1]);
+		
+	if (!access(argv[2], R_OK))
+		printf("Error: Could not open file %s\n", argv[1]);
+
     BmpData bdat;
 	long corruptionFactorMax, dataSize, sourceSize, encodingOffset; 
 	int bit, currentSourceByte, currentDataByte, encodingBit;
-	
-    if (fbmp == NULL || fout == NULL || fdat == NULL) {
-        printf("Error: Could not open files.\n");
-        exit(0);
-    }
 
     bdat = check_bitmap(fbmp); // get information about our bitmap
 	dataSize = amountOfBytes(argv[2]); // get the amount of bytes of our data file
 	sourceSize = bdat.numpixelbytes - BITS_IN_INT;
 	encodingOffset = bdat.headersize + BITS_IN_INT;
 	encodingBit = 0;
+
+	if (dataSize * BITS_IN_BYTE > sourceSize)
+		printf("Error: Bitmap too small to store data file");
 
 	if (DEBUG)
 		printf("sourceSize(%li) dataSize(%li) dataBitSize(%li)\n", 
@@ -129,17 +179,14 @@ void checkForExistingFile(char *str)
 			scanf(" %c", &x);
 				
 			if (x == 'n')
-				exit(0);
-				
+				exit(0);				
 			else if (x == 'y')
 				a = 1;
-			
 			else
 				printf("Please enter y or n:\n");
 		}
 	}	
 }
-
 
 int main(int argc, char* argv[])
 {
@@ -147,22 +194,18 @@ int main(int argc, char* argv[])
 	{
 		checkForExistingFile(argv[3]);
 		encode(argv);
-		//printf("passed");
 	}
-	
 	else if(argc == 3)
 	{
 		checkForExistingFile(argv[2]);
-	//	decode(argv);
-		printf("passed");
+		decode(argv);
 	}
-	
 	else	
-		{
-			printf("Usage: (encode or decode, respectively)\n");
-			printf("steg <bmpfile> <datafile> <outputfile>\n");
-			printf("steg <bmpfile> <outputfile>\n");
-			exit(0);
-		}
+	{
+		printf("Usage: (encode or decode, respectively)\n");
+		printf("steg <bmpfile> <datafile> <outputfile>\n");
+		printf("steg <bmpfile> <outputfile>\n");
+		exit(0);
+	}
 }
 
